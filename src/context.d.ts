@@ -1,7 +1,8 @@
 import { Client } from "eris";
-import { Command } from "./lib/Command";
 import { Logger } from "./lib/Logging";
 import { PrismaClient } from "@prisma/client";
+import { EventHandler } from "./events/EventHandler";
+import { Module } from "./modules/index";
 
 export type Context = {
   log_level: string;
@@ -10,7 +11,10 @@ export type Context = {
   bot: Client;
   logger: Logger;
   current_modules: {
-    [key: string]: Command[]
+    [key: string]: Module
   };
   prisma: PrismaClient;
+  handlers: {
+    [event: string]: EventHandler
+  }
 }

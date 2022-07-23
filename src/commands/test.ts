@@ -12,6 +12,6 @@ export class TestCommand implements Command {
   command_function: CommandFunction = async (ctx, args) => {
     const msg = await args.create_reply("test success");
     if (!msg) return;
-    ctx.logger.debug("TestCommand", msg.content);
+    ctx.logger.debug(msg.content);
   };
 }

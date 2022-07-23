@@ -11,6 +11,7 @@ import {
 import { Context } from "../context";
 
 export enum CommandError {
+  UNREACHABLE_ERROR,
   INVALID_ARGUMENT,
   MISSING_ARGUMENT,
   USER_NOT_ON_WHITELIST,
@@ -20,6 +21,7 @@ export enum CommandError {
 
 export function get_error_text(error: CommandError): string {
   switch (error) {
+  case CommandError.UNREACHABLE_ERROR: return "UNREACHABLE (developer issue)";
   case CommandError.INVALID_ARGUMENT: return "Invalid argument";
   case CommandError.MISSING_ARGUMENT: return "Missing required argument";
   case CommandError.USER_NOT_ON_WHITELIST: return "User is not whitelisted";
@@ -34,8 +36,9 @@ export type CommandOption = {
   name: string;
   description: string;
   type: CommandOptionType;
-  required: boolean;
-  options?: CommandOption[],
+  required?: boolean;
+  hints_to?: string;
+  options?: CommandOption[];
   choices?: ApplicationCommandOptionChoice[];
 };
 
@@ -57,7 +60,7 @@ export type CommandDetails = {
 };
 
 export type Mention = User | Member | Message | Channel | Guild;
-export type Argument = string | number | boolean | Mention | Mention[] | Interaction | CommandArguments;
+export type Argument = string | number | boolean | Mention | Interaction | CommandArguments | Argument[];
 export type CommandArguments = {
   create_reply: (reply: string) => Promise<Message | undefined>;
   arguments?: { [name: string]: Argument };

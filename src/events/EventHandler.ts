@@ -1,16 +1,16 @@
 import { Context } from "../context";
 
-export type ListenerFn<T> = (ctx: Context, event: T) => void;
+export type ListenerFn = (ctx: Context, ...args) => void;
 
-export class EventHandler<T> {
-  listeners: ListenerFn<T>[] = [];
-  register_listener(callback: ListenerFn<T>) {
+export class EventHandler {
+  listeners: ListenerFn[] = [];
+  register_listener(callback: ListenerFn) {
     this.listeners.push(callback);
   }
-  handle_event(ctx: Context, event: T) {
+  handle_event(ctx: Context, ...args) {
     this.listeners.forEach(
       listener => {
-        listener(ctx, event);
+        listener(ctx, ...args);
       }
     );
   }

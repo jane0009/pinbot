@@ -1,9 +1,8 @@
-import * as events from "./events";
 import Eris from "eris";
 import { Context } from "./context";
 import { EventHandler } from "./events/EventHandler";
 import { get_module_list } from "./modules/index";
-import { handle_module_registry, inject_context } from "./lib/utils";
+import { handle_module_registry, inject_context } from "./lib/Registry";
 import { Logger } from "./lib/Logging";
 import { PrismaClient } from "@prisma/client";
 import "dotenv/config";
@@ -23,6 +22,7 @@ const context: Context = {
   current_modules: {},
   logger: new Logger(process.env.LOG_LEVEL),
   prisma: new PrismaClient(),
+  handlers: {}
 };
 
 Bot.on("ready", async () => {
@@ -30,7 +30,7 @@ Bot.on("ready", async () => {
   const guild_commands = {};
   const curCommands = await Bot.getCommands();
   curCommands.forEach(command => commands[command.name] = command);
-  for (const [_, guild] of Bot.guilds) {
+  for (const [, guild] of Bot.guilds) {
     const curCommands = await guild.getCommands();
     if (!guild_commands[guild.id]) guild_commands[guild.id] = {};
     curCommands.forEach(command => guild_commands[guild.id][command.name] = command);
@@ -41,20 +41,7 @@ Bot.on("ready", async () => {
   context.current_modules = result;
 });
 
-for (const event in events) {
-  context.logger.info("main", `registering ${event} handler`);
-  const handler = events[event];
-  if (!(handler instanceof EventHandler)) {
-    context.logger.warn("main", "could not register event as it is not an event handler");
-    continue;
-  }
-  Bot.on(event, (...args) => {
-    context.logger.verbose("main", event, events[event]);
-    events[event].handle_event(context, ...args);
-  });
-}
-
-Bot.on("error", (err) => context.logger.error("main", err));
+Bot.on("error", (err) => context.logger.error(err));
 
 Bot.connect();
 

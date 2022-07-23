@@ -1,6 +1,6 @@
 import { Context } from "../context";
-const OnReady = (ctx: Context) => {
-  ctx.logger.info("ready", "Ready recieved.");
+const on_ready = (ctx: Context) => {
+  ctx.logger.info("Ready recieved.");
 };
 
-export default OnReady;
+export default on_ready;
