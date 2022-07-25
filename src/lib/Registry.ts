@@ -94,7 +94,7 @@ export async function retroactive_remove(gid: string, command: string) {
   await ctx.bot.deleteGuildCommand(gid, cmd_match[0].id);
 }
 
-export async function handle_module_registry(Bot: Client, available_modules, commands, guild_commands) {
+export async function handle_module_registry(Bot: Client, available_modules, commands, guild_commands, blacklisted_guilds: string[]) {
   if (!ctx || !ctx.logger) {
     console.error("logger is not present");
     return;
@@ -147,6 +147,10 @@ export async function handle_module_registry(Bot: Client, available_modules, com
         }
         if (command.guilds != undefined) {
           for (const guild_id of command.guilds) {
+            if (blacklisted_guilds.includes(guild_id)) {
+              ctx.logger.warn("skipping errored guild", guild_id);
+              continue;
+            }
             ctx.logger.verbose(guild_commands[guild_id], guild_commands[guild_id]?.[options.name]);
             if (
               !guild_commands[guild_id]
@@ -174,6 +178,10 @@ export async function handle_module_registry(Bot: Client, available_modules, com
           const needs_delete = Object.keys(guild_commands).filter(guild_id => guild_commands[guild_id][options.name] != undefined && !command.guilds?.includes(guild_id));
           if (needs_delete.length > 0) {
             for (const guild_id of needs_delete) {
+              if (blacklisted_guilds.includes(guild_id)) {
+                ctx.logger.warn("skipping errored guild", guild_id);
+                continue;
+              }
               ctx.logger.info(`deleting command ${options.name} from un-whitelisted guild ${guild_id}`);
               Bot.deleteGuildCommand(guild_id, guild_commands[guild_id][options.name].id);
             }
@@ -192,6 +200,10 @@ export async function handle_module_registry(Bot: Client, available_modules, com
             ctx.logger.info(`recreating command ${options.name}`);
 
             for (const guild_id in guild_commands) {
+              if (blacklisted_guilds.includes(guild_id)) {
+                ctx.logger.warn("skipping errored guild", guild_id);
+                continue;
+              }
               const guild = guild_commands[guild_id];
               if (guild[options.name]) {
                 ctx.logger.info(`removing older guild command in ${guild_id}`);

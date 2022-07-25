@@ -28,15 +28,20 @@ const context: Context = {
 Bot.on("ready", async () => {
   const commands = {};
   const guild_commands = {};
+  const blacklisted_guilds: string[] = [];
   const curCommands = await Bot.getCommands();
   curCommands.forEach(command => commands[command.name] = command);
   for (const [, guild] of Bot.guilds) {
-    const curCommands = await guild.getCommands();
-    if (!guild_commands[guild.id]) guild_commands[guild.id] = {};
-    curCommands.forEach(command => guild_commands[guild.id][command.name] = command);
+    try {
+      const curCommands = await guild.getCommands();
+      if (!guild_commands[guild.id]) guild_commands[guild.id] = {};
+      curCommands.forEach(command => guild_commands[guild.id][command.name] = command);
+    } catch (e) {
+      blacklisted_guilds.push(guild.id);
+    }
   }
   inject_context(context);
-  const result = await handle_module_registry(Bot, available_modules, commands, guild_commands);
+  const result = await handle_module_registry(Bot, available_modules, commands, guild_commands, blacklisted_guilds);
   if (!result) {process.exit(1);}
   context.current_modules = result;
 });
