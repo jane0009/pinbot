@@ -137,6 +137,7 @@ async function get_embed_object(ctx: Context, message: Message, count: number): 
       icon_url: full_message.author.avatarURL
     },
     title: "Jump link",
+    description: full_message.content,
     url: `https://discord.com/channels/${full_message.guildID}/${full_message.channel.id}/${full_message.id}`,
     image: (full_message.attachments && full_message.attachments.length > 0) ? { url: full_message.attachments[0].url } : (matching_embed_urls.length > 0 ? matching_embed_urls[0] : undefined),
     timestamp: new Date(full_message.timestamp),
