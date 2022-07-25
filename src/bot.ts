@@ -37,6 +37,7 @@ Bot.on("ready", async () => {
       if (!guild_commands[guild.id]) guild_commands[guild.id] = {};
       curCommands.forEach(command => guild_commands[guild.id][command.name] = command);
     } catch (e) {
+      context.logger.warn("blacklisting errored guild ", guild.id, guild.name);
       blacklisted_guilds.push(guild.id);
     }
   }
