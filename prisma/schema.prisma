@@ -21,3 +21,22 @@ model Whitelist {
   command_id String
   created_at DateTime @default(now())
 }
+
+model Setting {
+  id Int @id @default(autoincrement())
+  subject_id String
+  setting_name String
+  setting_value String
+  created_at DateTime @default(now())
+}
+
+model StarboardReaction {
+  id Int @id @default(autoincrement())
+  message_id String
+  user_id String
+}
+
+model StarboardMessage {
+  embed_id String @id
+  message_id String
+}

@@ -1,10 +1,12 @@
 import {
   ApplicationCommandOptionChoice,
   Channel,
+  ChannelTypes,
   Guild,
   Interaction,
   Member,
   Message,
+  MessageContent,
   Permission,
   User
 } from "eris";
@@ -40,6 +42,7 @@ export type CommandOption = {
   hints_to?: string;
   options?: CommandOption[];
   choices?: ApplicationCommandOptionChoice[];
+  channel_types?: ChannelTypes[];
 };
 
 export enum WhitelistType {
@@ -62,7 +65,7 @@ export type CommandDetails = {
 export type Mention = User | Member | Message | Channel | Guild;
 export type Argument = string | number | boolean | Mention | Interaction | CommandArguments | Argument[];
 export type CommandArguments = {
-  create_reply: (reply: string) => Promise<Message | undefined>;
+  create_reply: (reply: MessageContent) => Promise<Message | undefined>;
   arguments?: { [name: string]: Argument };
 };
 

@@ -1,15 +1,24 @@
-import { Command } from "../lib/Command";
+import { Command, WhitelistType } from "../lib/Command";
 import { ListenerFn } from "../events/EventHandler";
 import { readdirSync } from "fs";
+
+// TODO idea
+// settings: [guild, user] type
+
+
+export type Setting = {
+  name: string;
+  default: string;
+  hidden?: boolean;
+  type: WhitelistType;
+}
 
 export class Module {
   events?: {
     [event: string]: ListenerFn[]
   };
   commands?: Command[];
-  settings?: {
-    [key: string]: string | number;
-  };
+  settings?: Setting[];
 }
 
 export async function get_module(filename: string): Promise<Module> {

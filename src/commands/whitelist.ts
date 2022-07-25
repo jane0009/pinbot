@@ -1,4 +1,4 @@
-import { Constants, ApplicationCommandOptionChoice, Guild, User } from "eris";
+import { Constants, Guild, User } from "eris";
 import { Command, CommandDetails, CommandFunction, WhitelistType, CommandArguments } from "../lib/Command";
 import { Context } from "../context";
 import { retroactive_create, retroactive_remove } from "../lib/Registry";
@@ -13,7 +13,6 @@ export class WhitelistCommand implements Command {
         name: "list",
         description: "Display whitelist",
         type: Constants["ApplicationCommandOptionTypes"]["SUB_COMMAND"],
-        required: true,
         options: [
           {
             name: "type",
@@ -43,7 +42,6 @@ export class WhitelistCommand implements Command {
         name: "add",
         description: "Add to whitelist",
         type: Constants["ApplicationCommandOptionTypes"]["SUB_COMMAND"],
-        required: true,
         options: [
           {
             name: "type",
@@ -80,7 +78,6 @@ export class WhitelistCommand implements Command {
         name: "remove",
         description: "Remove from whitelist",
         type: Constants["ApplicationCommandOptionTypes"]["SUB_COMMAND"],
-        required: true,
         options: [
           {
             name: "type",

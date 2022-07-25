@@ -1,4 +1,4 @@
-import { ApplicationCommand, ApplicationCommandOptionsSubCommand, ApplicationCommandOptionsSubCommandGroup } from "eris";
+import { ApplicationCommand, ApplicationCommandOptionsChannel, ApplicationCommandOptionsSubCommand, ApplicationCommandOptionsSubCommandGroup } from "eris";
 import { ApplicationCommandOptionChoice, ApplicationCommandOptions } from "eris";
 import { ApplicationCommandOptionWithChoices } from "eris";
 import { Command, CommandDetails, CommandOption, WhitelistType } from "./Command";
@@ -13,6 +13,37 @@ let ctx: Context;
 
 export function inject_context(_ctx: Context) {
   ctx = _ctx;
+}
+
+export async function get_setting_value(set_name: string, user_id?: string, guild_id?: string): Promise<string | undefined> {
+  ctx.logger.verbose("searching for", set_name);
+  for (const key in ctx.current_modules) {
+    const module = ctx.current_modules[key];
+    if (!module.settings) continue;
+    const setting_match = module.settings.filter(
+      setting => setting.name === set_name
+    );
+    ctx.logger.verbose(key, setting_match);
+    if (!setting_match[0]) continue;
+    const setting = setting_match[0];
+    const real_id = setting.type === WhitelistType.OWNER ? ctx.owner :
+      setting.type === WhitelistType.GUILD ? guild_id
+        : user_id;
+    ctx.logger.verbose(setting.type, real_id);
+    if (!real_id) return undefined;
+    const result = await ctx.prisma.setting.findFirst({
+      where: {
+        subject_id: real_id,
+        setting_name: set_name
+      }
+    });
+    if (result) {
+      return result.setting_value;
+    } else {
+      return setting.default;
+    }
+  }
+  return undefined;
 }
 
 function find_command(command: string) {
@@ -149,7 +180,12 @@ export async function handle_module_registry(Bot: Client, available_modules, com
           }
         }
         else {
-          if (
+          if (commands[options.name] && options.whitelist == WhitelistType.GUILD) {
+            ctx.logger.info("removing older global command");
+
+            Bot.deleteCommand(commands[options.name].id);
+          }
+          else if (
             !commands[options.name]
               || !compare_command(commands[options.name], options)
           ) {
@@ -219,6 +255,12 @@ function compare_options(existing: ApplicationCommandOptions[] | undefined, temp
         diff = true; break;
       }
     }
+    if (tp.type != Constants["ApplicationCommandOptionTypes"]["SUB_COMMAND"] &&
+      tp.type != Constants["ApplicationCommandOptionTypes"]["SUB_COMMAND_GROUP"] &&
+      ((ext.required && !tp.required) || (!ext.required && tp.required))) {
+      ctx.logger.verbose("required break", ext.required, tp.required);
+      diff = true; break;
+    }
     const exo = ex.type === Constants["ApplicationCommandOptionTypes"]["SUB_COMMAND"] ? (ex as unknown as ApplicationCommandOptionsSubCommand) :
       (ex as unknown as ApplicationCommandOptionsSubCommandGroup);
     if (exo.options || tp.options) {
@@ -232,6 +274,13 @@ function compare_options(existing: ApplicationCommandOptions[] | undefined, temp
       if (diff) break;
     }
     ctx.logger.verbose(ex, tp, diff);
+    const exc = ex as unknown as ApplicationCommandOptionsChannel;
+    if (exc.channel_types || tp.channel_types) {
+      if (exc.channel_types == undefined || tp.channel_types == undefined) {
+        diff = true; break;
+      }
+      // todo compare channel types
+    }
   } 
   return !diff;
 }
@@ -278,11 +327,23 @@ export function get_option(option: CommandOption) {
     };
     break;
   }
+  case Constants["ApplicationCommandOptionTypes"]["CHANNEL"]:
+  {
+    result = {
+      description: option.description,
+      name: option.name,
+      type: option.type,
+      required: option.required,
+      channel_types: option.channel_types
+    };
+    break;
+  }
   default: {
     result = {
       description: option.description,
       name: option.name,
-      type: option.type
+      type: option.type,
+      required: option.required
     };}
   }
   ctx.logger.verbose(option, result);
